@@ -13,9 +13,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import com.isariev.orderservice.dto.mapper.OrderMapper;
+
 import java.util.*;
 
 @Service
@@ -32,6 +34,7 @@ public class OrderService {
 
     private final KafkaTemplate<String, OrderResponseDto> kafkaTemplate;
 
+    @Transactional(propagation = Propagation.MANDATORY)
     public void placeOrder(OrderRequest orderRequest) {
         Order order = new Order();
         try {
@@ -53,9 +56,20 @@ public class OrderService {
             orderRepository.save(order);
         }
     }
-        @KafkaListener(topics = TOPIC_NEW, groupId = "groupId")
-        public void consumeSkuCodes (Long orderId){
-            orderRepository.updateStatusById("FAILED", orderId);
-        }
+    private Order saveOrder(OrderRequest orderRequest, Order order) {
+        order.setOrderNumber(UUID.randomUUID().toString());
+        List<OrderLineItems> orderLineItems = orderRequest.getOrderLineItemsDtoList()
+                .stream().map(OrderMapper::mapToEntity)
+                .toList();
+        order.setOrderLineItemsList(orderLineItems);
+        order.setStatus("SUCCESS");
+
+        return orderRepository.save(order);
+    }
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @KafkaListener(topics = TOPIC_NEW, groupId = "groupId")
+    public void consumeSkuCodes(Long orderId) {
+        orderRepository.updateStatusById("FAILED", orderId);
+    }
 
 }

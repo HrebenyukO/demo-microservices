@@ -20,7 +20,6 @@ server:
   port: 8082
 
 
-
 eureka:
   client:
     service-url:
@@ -30,6 +29,7 @@ logging:
   level:
     root: INFO
     com.isariev.orderservice: DEBUG
+    org.springframework.transaction: DEBUG
 
 ## Resilience4J Configuration
 resilience4j:
