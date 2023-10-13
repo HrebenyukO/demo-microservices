@@ -16,8 +16,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-@EnableWebFluxSecurity
-@EnableReactiveMethodSecurity
+
 public class SecurityConfig {
 
     @Value("${eureka.username}")

@@ -3,6 +3,7 @@ package com.isariev.orderservice.service;
 import com.isariev.orderservice.dto.InventoryResponse;
 import com.isariev.orderservice.dto.OrderLineItemsDto;
 import com.isariev.orderservice.dto.OrderRequest;
+import com.isariev.orderservice.exception.ProductNotExistException;
 import com.isariev.orderservice.model.Order;
 import com.isariev.orderservice.model.OrderLineItems;
 import com.isariev.orderservice.repository.OrderRepository;
@@ -47,7 +48,7 @@ public class OrderService {
             orderRepository.save(order);
             return "Order placed successfully";
         } else {
-            throw new IllegalArgumentException("Product is not in stock, please try again latter");
+            throw new ProductNotExistException("Product is not in stock, please try again latter");
         }
     }
 
