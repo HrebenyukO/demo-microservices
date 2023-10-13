@@ -31,12 +31,10 @@ public class KafkaConsumerConfig {
 
         return props;
     }
-
     @Bean
     public ConsumerFactory<String, List<InventoryResponse>> consumerFactory() {
         return new DefaultKafkaConsumerFactory<>(consumerConfig());
     }
-
     @Bean
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, List<InventoryResponse>>> factory(ConsumerFactory<String, List<InventoryResponse>> consumerFactory) {
         ConcurrentKafkaListenerContainerFactory<String, List<InventoryResponse>> factory = new ConcurrentKafkaListenerContainerFactory<>();

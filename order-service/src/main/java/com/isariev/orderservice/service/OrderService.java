@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.isariev.orderservice.dto.InventoryResponse;
 import com.isariev.orderservice.dto.OrderLineItemsDto;
 import com.isariev.orderservice.dto.OrderRequest;
+import com.isariev.orderservice.dto.OrderResponseDto;
 import com.isariev.orderservice.exception.ProductNotExistException;
 import com.isariev.orderservice.model.Order;
 import com.isariev.orderservice.model.OrderLineItems;
@@ -25,9 +26,11 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
 
-    private final KafkaTemplate<String, List<String>> kafkaTemplate;
+
     private final static String TOPIC = "order-inventory-topic";
     private final static String TOPIC_NEW = "order-inventory-topic-1";
+
+    private final KafkaTemplate<String, OrderResponseDto> kafkaTemplate;
 
     public void placeOrder(OrderRequest orderRequest) {
         Order order = new Order();
@@ -42,13 +45,9 @@ public class OrderService {
             Order savedOrder = orderRepository.save(order);
 
             List<String> skuCodes = order.getOrderLineItemsList().stream().map(OrderLineItems::getSkuCode).toList();
-            Map<String, Object> message = new HashMap<>();
-            message.put("orderId", savedOrder.getId());
-            message.put("skuCodes", skuCodes);
+            OrderResponseDto responseDto = new OrderResponseDto(savedOrder.getId(), skuCodes);
 
-            ObjectMapper objectMapper = new ObjectMapper();
-
-            kafkaTemplate.send(TOPIC, List.of(objectMapper.writeValueAsString(message)));
+            kafkaTemplate.send(TOPIC, responseDto);
         } catch (Exception e) {
             order.setStatus("FAILED");
             orderRepository.save(order);

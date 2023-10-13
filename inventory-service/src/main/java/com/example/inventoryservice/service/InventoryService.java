@@ -1,6 +1,7 @@
 package com.example.inventoryservice.service;
 
 import com.example.inventoryservice.dto.InventoryResponse;
+import com.example.inventoryservice.dto.OrderResponseDto;
 import com.example.inventoryservice.exception.ProductNotExistException;
 import com.example.inventoryservice.model.Inventory;
 import com.example.inventoryservice.repository.InventoryRepository;
@@ -49,11 +50,10 @@ public class InventoryService {
 
 
 
-    @KafkaListener(topics = TOPIC, groupId = "groupId")
-    public void consumeSkuCodes(String resultMap) {
-        Map<String, Object> map = messageConverter.convertJsonToMap(resultMap);
+    @KafkaListener(topics = TOPIC, groupId = "groupId", containerFactory = "factory")
+    public void consumeSkuCodes(OrderResponseDto responseDto) {
         List<InventoryResponse> responses = inventoryRepository
-                .findBySkuCodeIn((List<String>) map.get("skuCodes"))
+                .findBySkuCodeIn(responseDto.skuCodes())
                 .stream().map(inventory ->
                         InventoryResponse.builder()
                                 .skuCode(inventory.getSkuCode())
@@ -62,8 +62,7 @@ public class InventoryService {
                 ).toList();
         boolean result = responses.stream().allMatch(InventoryResponse::isInStock);
         if (!result || responses.isEmpty()) {
-            Integer res = (Integer) map.get("orderId");
-            kafkaTemplate.send(TOPIC_NEW, res.longValue());
+            kafkaTemplate.send(TOPIC_NEW, responseDto.orderId());
         }
     }
 }
