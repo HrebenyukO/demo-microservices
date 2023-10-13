@@ -19,10 +19,8 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    @CircuitBreaker(name = "InventoryServiceBasedOnCount", fallbackMethod = "placeOrderFallback")
-        @ResponseStatus(HttpStatus.CREATED)
-    public CompletableFuture<String> placeOrder(@RequestBody OrderRequest orderRequest) {
-        return CompletableFuture.supplyAsync(() -> orderService.placeOrder(orderRequest));
+    public void placeOrder(@RequestBody OrderRequest orderRequest) {
+        orderService.placeOrder(orderRequest);
     }
 
   /*  public CompletableFuture<String> placeOrderFallback(OrderRequest orderRequest, RuntimeException e) {

@@ -7,11 +7,19 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    show-sql: true
   application:
     name: order-service
+  config:
+    import: optional:test.properties
+  kafka:
+    bootstrap-servers: localhost:9092
+
 
 server:
   port: 8082
+
+
 
 eureka:
   client:

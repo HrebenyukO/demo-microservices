@@ -9,7 +9,8 @@ spring:
       ddl-auto: create-drop
   application:
     name: inventory-service
-
+  kafka:
+    bootstrap-servers: localhost:9092
 server:
   port: 0
 
